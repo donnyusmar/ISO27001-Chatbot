@@ -1,0 +1,17 @@
+{
+  "name": "gemini-chatbot-api",
+  "version": "1.0.0",
+  "description": "ISO 27001-2022 Chatbot with Gemini 2.5 Flash and Astra DB Integration",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "@google/genai": "^2.10.0",
+    "@modelcontextprotocol/sdk": "^1.29.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2"
+  }
+}
