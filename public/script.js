@@ -62,7 +62,18 @@ form.addEventListener('submit', async function (e) {
 function appendMessage(sender, text) {
   const msg = document.createElement('div');
   msg.classList.add('message', sender);
-  msg.textContent = text;
+  
+  if (sender === 'bot') {
+    // Parse markdown jika marked.js dimuat, jika tidak gunakan fallback mengganti newline
+    if (window.marked && typeof window.marked.parse === 'function') {
+      msg.innerHTML = window.marked.parse(text);
+    } else {
+      msg.innerHTML = text.replace(/\n/g, '<br>');
+    }
+  } else {
+    msg.textContent = text;
+  }
+  
   chatBox.appendChild(msg);
   chatBox.scrollTop = chatBox.scrollHeight;
   return msg;
