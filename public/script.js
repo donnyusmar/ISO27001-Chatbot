@@ -8,11 +8,43 @@ const searchInput = document.getElementById('search-threads');
 const threadsList = document.getElementById('threads-list');
 const showMoreBtn = document.getElementById('show-more-threads');
 
+// Elemen-elemen Sidebar Toggle
+const sidebar = document.getElementById('sidebar');
+const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
+const expandSidebarBtn = document.getElementById('expand-sidebar-btn');
+
 // Kelola state threads dan riwayat chat dari LocalStorage
 let threads = JSON.parse(localStorage.getItem('chat_threads')) || [];
 let currentThreadId = localStorage.getItem('current_thread_id') || null;
 let conversationHistory = [];
 let displayLimit = 8; // Batasan tampilan awal daftar "Terbaru"
+let draggedThreadId = null; // Menyimpan id thread yang sedang di-drag
+
+// Event: Expand/Collapse Sidebar
+toggleSidebarBtn.addEventListener('click', () => {
+  sidebar.classList.add('collapsed');
+  expandSidebarBtn.style.display = 'flex';
+});
+
+expandSidebarBtn.addEventListener('click', () => {
+  sidebar.classList.remove('collapsed');
+  expandSidebarBtn.style.display = 'none';
+});
+
+// Tutup dropdown di mana saja saat diklik di luar dropdown
+document.addEventListener('click', (e) => {
+  if (!e.target.closest('.thread-options-btn') && !e.target.closest('.thread-dropdown')) {
+    document.querySelectorAll('.thread-dropdown.show').forEach(dropdown => {
+      dropdown.classList.remove('show');
+    });
+    document.querySelectorAll('.thread-options-btn.active').forEach(btn => {
+      btn.classList.remove('active');
+    });
+  }
+});
+
+// Deteksi shared conversation dari URL Hash di awal
+checkSharedChat();
 
 // Render UI sidebar di awal
 renderThreads();
@@ -24,6 +56,10 @@ newChatBtn.addEventListener('click', () => {
   conversationHistory = [];
   localStorage.removeItem('current_thread_id');
   chatBox.innerHTML = '';
+  // Bersihkan URL hash jika sedang melihat chat yang dibagikan
+  if (window.location.hash.startsWith('#share=')) {
+    history.replaceState(null, "", window.location.pathname);
+  }
   renderThreads();
   input.focus();
 });
@@ -166,8 +202,13 @@ function renderThreads(filterText = '') {
 
   const visibleThreads = filtered.slice(0, displayLimit);
   
-  visibleThreads.forEach(t => {
+  visibleThreads.forEach((t, index) => {
     const li = document.createElement('li');
+    li.classList.add('thread-item-wrapper');
+    li.setAttribute('draggable', 'true');
+    li.dataset.id = t.id;
+
+    // --- RENDER ELEMENT BUTTON TITLE ---
     const button = document.createElement('button');
     button.classList.add('thread-item');
     if (t.id === currentThreadId) {
@@ -184,6 +225,111 @@ function renderThreads(filterText = '') {
     });
     
     li.appendChild(button);
+
+    // --- RENDER KOTAK PILIHAN / DROPDOWN MENU ---
+    const optionsBtn = document.createElement('button');
+    optionsBtn.classList.add('thread-options-btn');
+    optionsBtn.innerHTML = '&#8942;'; // Ikon tiga titik vertikal (⋮)
+    
+    const dropdown = document.createElement('div');
+    dropdown.classList.add('thread-dropdown');
+
+    // Menu Item: Edit Judul
+    const renameItem = document.createElement('button');
+    renameItem.classList.add('dropdown-item');
+    renameItem.innerHTML = '✏️ Edit Judul';
+    renameItem.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.remove('show');
+      optionsBtn.classList.remove('active');
+      enableRenameMode(li, t);
+    });
+
+    // Menu Item: Bagikan (Share)
+    const shareItem = document.createElement('button');
+    shareItem.classList.add('dropdown-item');
+    shareItem.innerHTML = '🔗 Bagikan';
+    shareItem.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.remove('show');
+      optionsBtn.classList.remove('active');
+      shareThread(t);
+    });
+
+    // Menu Item: Hapus (Delete)
+    const deleteItem = document.createElement('button');
+    deleteItem.classList.add('dropdown-item', 'delete');
+    deleteItem.innerHTML = '🗑️ Hapus';
+    deleteItem.addEventListener('click', (e) => {
+      e.stopPropagation();
+      dropdown.classList.remove('show');
+      optionsBtn.classList.remove('active');
+      deleteThread(t.id);
+    });
+
+    dropdown.appendChild(renameItem);
+    dropdown.appendChild(shareItem);
+    dropdown.appendChild(deleteItem);
+
+    optionsBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      // Tutup dropdown lain yang terbuka
+      document.querySelectorAll('.thread-dropdown.show').forEach(d => {
+        if (d !== dropdown) d.classList.remove('show');
+      });
+      document.querySelectorAll('.thread-options-btn.active').forEach(b => {
+        if (b !== optionsBtn) b.classList.remove('active');
+      });
+
+      dropdown.classList.toggle('show');
+      optionsBtn.classList.toggle('active');
+    });
+
+    li.appendChild(optionsBtn);
+    li.appendChild(dropdown);
+
+    // --- BIND DRAG AND DROP HANDLERS ---
+    li.addEventListener('dragstart', (e) => {
+      draggedThreadId = t.id;
+      e.dataTransfer.effectAllowed = 'move';
+      li.style.opacity = '0.5';
+    });
+
+    li.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      li.classList.add('drag-over');
+    });
+
+    li.addEventListener('dragleave', () => {
+      li.classList.remove('drag-over');
+    });
+
+    li.addEventListener('dragend', () => {
+      li.style.opacity = '1';
+      document.querySelectorAll('.thread-item-wrapper').forEach(el => {
+        el.classList.remove('drag-over');
+      });
+    });
+
+    li.addEventListener('drop', (e) => {
+      e.preventDefault();
+      li.classList.remove('drag-over');
+      const targetThreadId = li.dataset.id;
+      
+      if (draggedThreadId && draggedThreadId !== targetThreadId) {
+        // Swap urutan di array threads
+        const fromIndex = threads.findIndex(item => item.id === draggedThreadId);
+        const toIndex = threads.findIndex(item => item.id === targetThreadId);
+        
+        if (fromIndex !== -1 && toIndex !== -1) {
+          const [removed] = threads.splice(fromIndex, 1);
+          threads.splice(toIndex, 0, removed);
+          localStorage.setItem('chat_threads', JSON.stringify(threads));
+          renderThreads(filterText);
+        }
+      }
+    });
+
     threadsList.appendChild(li);
   });
 
@@ -195,9 +341,109 @@ function renderThreads(filterText = '') {
   }
 }
 
+// Helper: Ubah item judul menjadi input rename
+function enableRenameMode(liElement, threadObj) {
+  const originalButton = liElement.querySelector('.thread-item');
+  const optionsBtn = liElement.querySelector('.thread-options-btn');
+  
+  originalButton.style.display = 'none';
+  optionsBtn.style.display = 'none';
+
+  const inputRename = document.createElement('input');
+  inputRename.type = 'text';
+  inputRename.classList.add('rename-input');
+  inputRename.value = threadObj.title;
+  
+  liElement.prepend(inputRename);
+  inputRename.focus();
+  inputRename.select();
+
+  const saveRename = () => {
+    const newTitle = inputRename.value.trim();
+    if (newTitle) {
+      threadObj.title = newTitle;
+      localStorage.setItem('chat_threads', JSON.stringify(threads));
+    }
+    renderThreads(searchInput.value.trim());
+  };
+
+  inputRename.addEventListener('blur', saveRename);
+  inputRename.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') saveRename();
+    if (e.key === 'Escape') renderThreads(searchInput.value.trim());
+  });
+}
+
+// Helper: Hapus Rangkaian Pesan (Delete)
+function deleteThread(id) {
+  threads = threads.filter(t => t.id !== id);
+  localStorage.setItem('chat_threads', JSON.stringify(threads));
+  
+  if (currentThreadId === id) {
+    currentThreadId = null;
+    localStorage.removeItem('current_thread_id');
+    chatBox.innerHTML = '';
+  }
+  
+  renderThreads(searchInput.value.trim());
+  showToast("Rangkaian pesan berhasil dihapus!");
+}
+
+// Helper: Bagikan Rangkaian Pesan (Share)
+function shareThread(threadObj) {
+  try {
+    const chatDataStr = JSON.stringify(threadObj.conversation);
+    // Encode data percakapan menjadi Base64
+    const base64Chat = btoa(encodeURIComponent(chatDataStr));
+    const shareUrl = `${window.location.origin}${window.location.pathname}#share=${base64Chat}`;
+    
+    navigator.clipboard.writeText(shareUrl).then(() => {
+      showToast("Link percakapan berhasil disalin ke clipboard!");
+    }).catch(err => {
+      console.error("Gagal menyalin link:", err);
+      showToast("Gagal menyalin link otomatis.");
+    });
+  } catch (err) {
+    console.error("Gagal enkoding chat:", err);
+    showToast("Gagal memproses link bagikan.");
+  }
+}
+
+// Helper: Deteksi dan Muat Chat yang Dibagikan
+function checkSharedChat() {
+  if (window.location.hash.startsWith('#share=')) {
+    try {
+      const base64Data = window.location.hash.substring(7);
+      const decodedJson = decodeURIComponent(atob(base64Data));
+      const sharedConversation = JSON.parse(decodedJson);
+
+      if (Array.isArray(sharedConversation)) {
+        // Buat thread temp untuk dibaca
+        currentThreadId = 'shared-temp';
+        conversationHistory = sharedConversation;
+        
+        showToast("Memuat percakapan yang dibagikan!");
+      }
+    } catch (e) {
+      console.error("Error memuat shared chat:", e);
+      showToast("Link percakapan yang dibagikan tidak valid.");
+    }
+  }
+}
+
 // Helper: Memuat percakapan thread aktif ke Chat Box
 function loadCurrentThread() {
   chatBox.innerHTML = '';
+  
+  // Jika sedang melihat share chat temp
+  if (currentThreadId === 'shared-temp') {
+    conversationHistory.forEach(msg => {
+      const sender = msg.role === 'user' ? 'user' : 'bot';
+      appendMessage(sender, msg.text);
+    });
+    return;
+  }
+
   if (!currentThreadId) {
     conversationHistory = [];
     return;
@@ -207,7 +453,6 @@ function loadCurrentThread() {
   if (thread) {
     conversationHistory = thread.conversation;
     conversationHistory.forEach(msg => {
-      // Petakan role API ke sender UI
       const sender = msg.role === 'user' ? 'user' : 'bot';
       appendMessage(sender, msg.text);
     });
@@ -216,4 +461,20 @@ function loadCurrentThread() {
     currentThreadId = null;
     localStorage.removeItem('current_thread_id');
   }
+}
+
+// Helper: Tampilkan Toast Notification
+function showToast(message) {
+  // Hapus toast lama jika ada
+  const oldToast = document.querySelector('.toast-msg');
+  if (oldToast) oldToast.remove();
+
+  const toast = document.createElement('div');
+  toast.classList.add('toast-msg');
+  toast.textContent = message;
+  document.body.appendChild(toast);
+  
+  setTimeout(() => {
+    toast.remove();
+  }, 2500);
 }
