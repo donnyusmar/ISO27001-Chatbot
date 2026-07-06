@@ -20,6 +20,14 @@ let conversationHistory = [];
 let displayLimit = 8; // Batasan tampilan awal daftar "Terbaru"
 let draggedThreadId = null; // Menyimpan id thread yang sedang di-drag
 
+// Helper: Auto-collapse sidebar di mobile
+function autoCollapseMobileSidebar() {
+  if (window.innerWidth <= 768) {
+    sidebar.classList.add('collapsed');
+    expandSidebarBtn.style.display = 'flex';
+  }
+}
+
 // Event: Expand/Collapse Sidebar
 toggleSidebarBtn.addEventListener('click', () => {
   sidebar.classList.add('collapsed');
@@ -29,6 +37,11 @@ toggleSidebarBtn.addEventListener('click', () => {
 expandSidebarBtn.addEventListener('click', () => {
   sidebar.classList.remove('collapsed');
   expandSidebarBtn.style.display = 'none';
+});
+
+// Tutup sidebar di mobile saat klik area main-content
+document.querySelector('.main-content').addEventListener('click', () => {
+  autoCollapseMobileSidebar();
 });
 
 // Tutup dropdown di mana saja saat diklik di luar dropdown
@@ -61,6 +74,7 @@ newChatBtn.addEventListener('click', () => {
     history.replaceState(null, "", window.location.pathname);
   }
   renderThreads();
+  autoCollapseMobileSidebar();
   input.focus();
 });
 
@@ -222,6 +236,7 @@ function renderThreads(filterText = '') {
       localStorage.setItem('current_thread_id', currentThreadId);
       loadCurrentThread();
       renderThreads(filterText);
+      autoCollapseMobileSidebar();
     });
     
     li.appendChild(button);

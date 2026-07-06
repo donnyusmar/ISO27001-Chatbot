@@ -449,3 +449,69 @@ body, html {
   background-color: #c4c7c5;
   cursor: not-allowed;
 }
+
+/* Responsive Mobile Rules */
+@media (max-width: 768px) {
+  .app-layout {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .sidebar {
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    z-index: 999;
+    box-shadow: 4px 0 15px rgba(0, 0, 0, 0.15);
+    background-color: #f0f4f9;
+  }
+
+  .sidebar.collapsed {
+    width: 0;
+    padding: 0;
+    border-right: none;
+    box-shadow: none;
+  }
+
+  .btn-expand-sidebar {
+    display: flex; /* Menampilkan tombol buka sidebar di mobile */
+  }
+
+  .chat-header {
+    padding: 12px 16px;
+  }
+
+  .chat-header h2 {
+    font-size: 16px;
+  }
+
+  .chat-box {
+    padding: 16px 12px;
+  }
+
+  .message {
+    max-width: 88%;
+    font-size: 14px;
+    padding: 10px 14px;
+  }
+
+  .input-area {
+    padding: 12px 12px 20px 12px;
+  }
+
+  #chat-form {
+    padding: 6px 12px;
+    border-radius: 20px;
+  }
+
+  #user-input {
+    font-size: 14px;
+    padding: 6px 0;
+  }
+
+  #chat-form button {
+    padding: 6px 14px;
+    font-size: 13px;
+  }
+}
