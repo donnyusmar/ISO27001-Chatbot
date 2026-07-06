@@ -8,7 +8,11 @@ import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js'
 const app = express();
 
 // Inisialisasi client Gemini AI menggunakan API key dari .env
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+console.log("[DIAGNOSTIC] GEMINI_API_KEY exists:", !!process.env.GEMINI_API_KEY);
+console.log("[DIAGNOSTIC] ASTRA_DB_APPLICATION_TOKEN exists:", !!process.env.ASTRA_DB_APPLICATION_TOKEN);
+console.log("[DIAGNOSTIC] ASTRA_DB_API_ENDPOINT exists:", !!process.env.ASTRA_DB_API_ENDPOINT);
+
+const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || "" });
 const GEMINI_MODEL = "gemini-2.5-flash";
 
 // Middleware
