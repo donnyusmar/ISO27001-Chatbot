@@ -1,0 +1,30 @@
+functionsDirectory = "C:\\Users\\Donnyusmar\\Downloads\\rain\\v7la-projects\\hactiv8\\IT-Pro\\starter\\netlify\\functions"
+functionsDirectoryOrigin = "ui"
+plugins = []
+headers = []
+redirects = []
+
+[functions]
+
+[functions."*"]
+
+[build]
+publish = "C:\\Users\\Donnyusmar\\Downloads\\rain\\v7la-projects\\hactiv8\\IT-Pro\\starter\\dist"
+publishOrigin = "ui"
+commandOrigin = "ui"
+command = "npm run build"
+functions = "C:\\Users\\Donnyusmar\\Downloads\\rain\\v7la-projects\\hactiv8\\IT-Pro\\starter\\netlify\\functions"
+
+[build.environment]
+
+[build.processing]
+
+[build.processing.css]
+
+[build.processing.html]
+
+[build.processing.images]
+
+[build.processing.js]
+
+[build.services]
