@@ -12,6 +12,7 @@ const showMoreBtn = document.getElementById('show-more-threads');
 const sidebar = document.getElementById('sidebar');
 const toggleSidebarBtn = document.getElementById('toggle-sidebar-btn');
 const expandSidebarBtn = document.getElementById('expand-sidebar-btn');
+const globalToggleChatBtn = document.getElementById('global-toggle-chat-btn');
 
 // Kelola state threads dan riwayat chat dari LocalStorage
 let threads = JSON.parse(localStorage.getItem('chat_threads')) || [];
@@ -165,16 +166,50 @@ function appendMessage(sender, text) {
 
   const msg = document.createElement('div');
   msg.classList.add('message', sender);
+
+  // Buat Header Pesan
+  const header = document.createElement('div');
+  header.classList.add('message-header');
+  
+  const label = document.createElement('span');
+  label.textContent = sender === 'user' ? 'Anda' : 'Gemini AI';
+  header.appendChild(label);
+
+  const iconMinimize = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="18 15 12 9 6 15"></polyline></svg>`;
+  const iconMaximize = `<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>`;
+
+  const toggleBtn = document.createElement('button');
+  toggleBtn.classList.add('msg-toggle-btn');
+  toggleBtn.title = 'Ciutkan Pesan';
+  toggleBtn.innerHTML = iconMinimize;
+  toggleBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    msg.classList.toggle('minimized');
+    if (msg.classList.contains('minimized')) {
+      toggleBtn.innerHTML = iconMaximize;
+      toggleBtn.title = 'Kembangkan Pesan';
+    } else {
+      toggleBtn.innerHTML = iconMinimize;
+      toggleBtn.title = 'Ciutkan Pesan';
+    }
+  });
+  header.appendChild(toggleBtn);
+  msg.appendChild(header);
+
+  // Buat Body Pesan
+  const body = document.createElement('div');
+  body.classList.add('message-body');
   
   if (sender === 'bot') {
     if (window.marked && typeof window.marked.parse === 'function') {
-      msg.innerHTML = window.marked.parse(text);
+      body.innerHTML = window.marked.parse(text);
     } else {
-      msg.innerHTML = text.replace(/\n/g, '<br>');
+      body.innerHTML = text.replace(/\n/g, '<br>');
     }
   } else {
-    msg.textContent = text;
+    body.textContent = text;
   }
+  msg.appendChild(body);
   
   wrapper.appendChild(msg);
   chatBox.appendChild(wrapper);
@@ -493,3 +528,43 @@ function showToast(message) {
     toast.remove();
   }, 2500);
 }
+
+// --- FASE 9: GLOBAL MAXIMIZE/MINIMIZE EVENT LISTENER ---
+let isAllCollapsed = false;
+globalToggleChatBtn.addEventListener('click', () => {
+  isAllCollapsed = !isAllCollapsed;
+  const messages = document.querySelectorAll('.message');
+  messages.forEach(msg => {
+    const toggleBtn = msg.querySelector('.msg-toggle-btn');
+    if (isAllCollapsed) {
+      msg.classList.add('minimized');
+      if (toggleBtn) toggleBtn.textContent = 'Kembangkan';
+    } else {
+      msg.classList.remove('minimized');
+      if (toggleBtn) toggleBtn.textContent = 'Ciutkan';
+    }
+  });
+
+  // Perbarui Ikon dan Judul Tombol Global
+  if (isAllCollapsed) {
+    globalToggleChatBtn.title = "Kembangkan Semua Chat";
+    globalToggleChatBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="15 3 21 3 21 9"></polyline>
+        <polyline points="9 21 3 21 3 15"></polyline>
+        <line x1="21" y1="3" x2="14" y2="10"></line>
+        <line x1="3" y1="21" x2="10" y2="14"></line>
+      </svg>
+    `;
+  } else {
+    globalToggleChatBtn.title = "Lipat Semua Chat";
+    globalToggleChatBtn.innerHTML = `
+      <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="4 14 10 14 10 20"></polyline>
+        <polyline points="20 10 14 10 14 4"></polyline>
+        <line x1="14" y1="10" x2="21" y2="3"></line>
+        <line x1="10" y1="14" x2="3" y2="21"></line>
+      </svg>
+    `;
+  }
+});

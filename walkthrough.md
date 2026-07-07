@@ -1,64 +1,81 @@
-# Walkthrough Hasil Implementasi Chatbot Gemini + Astra DB
-
-Seluruh tahapan pengembangan chatbot (Fase 1 sampai Fase 5) telah berhasil diselesaikan secara otonom.
-
----
-
-## 1. Perubahan yang Dilakukan
-
-* **Struktur Folder Terstandarisasi**:
-  * Folder baru `/public` dibuat untuk menyimpan file frontend statis.
-  * Berkas [index.html](file:///C:/Users/Donnyusmar/Downloads/rain/v7la-projects/hactiv8/IT-Pro/starter/public/index.html) dan [style.css](file:///C:/Users/Donnyusmar/Downloads/rain/v7la-projects/hactiv8/IT-Pro/starter/public/style.css) dipindahkan ke `/public` agar backend dapat menyajikannya secara statis.
-* **Inisialisasi Project Node.js**:
-  * Membuat berkas [package.json](file:///C:/Users/Donnyusmar/Downloads/rain/v7la-projects/hactiv8/IT-Pro/starter/package.json) dengan type `module` dan dependencies: `express`, `cors`, `dotenv`, `@google/genai`, dan `@modelcontextprotocol/sdk`.
-  * Sukses melakukan `npm install` seluruh dependensi backend.
-* **Implementasi Backend (`index.js`)**:
-  * Menulis berkas [index.js](file:///C:/Users/Donnyusmar/Downloads/rain/v7la-projects/hactiv8/IT-Pro/starter/index.js) yang bertindak sebagai Express server lokal sekaligus **MCP Client** yang terhubung ke **MCP Server astra-db**.
-  * Endpoint `POST /api/chat` melakukan pengambilan similarity vector (RAG) untuk dokumen `ISO 27001-2022 rm.pdf` (koleksi database `"data"`), lalu meneruskan konteks tersebut ke instruksi sistem Gemini 2.5 Flash API.
-* **Refaktor Frontend (`public/script.js`)**:
-  * Menulis berkas [script.js](file:///C:/Users/Donnyusmar/Downloads/rain/v7la-projects/hactiv8/IT-Pro/starter/public/script.js) untuk merekam riwayat percakapan (`conversationHistory`) secara dinamis, melakukan fetch API ke backend, dan mengelola status visual loading/proses.
-* **Pengisian Kredensial Lokal**:
-  * Membuat berkas [starter/.env](file:///C:/Users/Donnyusmar/Downloads/rain/v7la-projects/hactiv8/IT-Pro/starter/.env) berisi kredensial valid API Key Gemini & Application Token Astra DB.
+# Panduan Praktik Terbaik (Best Practices) & Progress Tracker
+## Gemini-Powered ISO 27001-2022 Chatbot (with Astra DB Integration)
 
 ---
 
-## 2. Pengujian & Verifikasi Terlaksana
+## Tabel Progress Tracker Aplikasi
 
-* **Status Startup Server**:
-  * Server berhasil dijalankan secara background di **http://localhost:3000** tanpa ada error.
-  * Log server menunjukkan koneksi sukses terhubung ke MCP Server:
-    `Server ready on http://localhost:3000`
-    `Successfully connected to Astra DB MCP Server.`
-* **Pengujian REST API Endpoint**:
-  * Pengujian HTTP request `POST` ke `/api/chat` melalui PowerShell berhasil menerima balasan valid dari model Gemini 2.5 Flash dalam Bahasa Indonesia:
-    `ISO 27001 adalah standar internasional...`
-
----
-
-## 3. Sinkronisasi GitHub (Fase 6)
-* Berhasil menginisialisasi repository Git lokal di root proyek.
-* Berkas `.gitignore` ditambahkan untuk melindungi berkas kredensial `.env` dan direktori `node_modules/`.
-* Mengkonfigurasi git email (`donnyusmar@gmail.com`) dan username (`donnyusmar`).
-* Menghubungkan remote repositori origin ke: `https://github.com/donnyusmar/ISO27001-Chatbot.git`.
-* Sukses melakukan push pertama branch `main` ke GitHub.
+| No | Nama Fase | Status | Progres | Keterangan |
+|---|---|---|---|---|
+| 1 | **Fase 1**: Persiapan Lingkungan & Inisialisasi | ✅ Selesai | 100% | Struktur folder siap, dependensi dasar, dan kredensial `.env` terisi. |
+| 2 | **Fase 2**: Implementasi Express Backend (`index.js`) | ✅ Selesai | 100% | Pembuatan REST API endpoint & serving folder statis sukses. |
+| 3 | **Fase 3**: Integrasi Astra DB via MCP Client | ✅ Selesai | 100% | Koneksi MCP terjalin dan VectorSearch untuk data ISO berhasil. |
+| 4 | **Fase 4**: Refaktor Frontend Client-Side (`public/script.js`) | ✅ Selesai | 100% | Pengiriman history percakapan multi-turn berfungsi lancar. |
+| 5 | **Fase 5**: Verifikasi, Pengujian & Shipment | ✅ Selesai | 100% | Pengujian E2E sukses dan server berjalan aktif di port 3000. |
+| 6 | **Fase 6**: Sinkronisasi & Update ke GitHub | ✅ Selesai | 100% | Konfigurasi git lokal, setup remote, dan push ke GitHub repo sukses. |
+| 7 | **Fase 7**: Implementasi Fitur Sidebar & UI Enhancements | ✅ Selesai | 100% | Menambahkan fitur Pesan Baru, Telusuri Percakapan, dan Persistensi riwayat. |
+| 8 | **Fase 8**: Sidebar CRUD, Kolaborasi, dan Drag-and-Drop | ✅ Selesai | 100% | Tambahkan edit judul, hapus, bagikan link chat, toggle sidebar, dan reorder list. |
+| 9 | **Fase 9**: Fitur Maximize & Minimize Isi Chat (Individu & Global) | ✅ Selesai | 100% | Pembuatan toggle ciutkan/kembangkan balon obrolan secara mandiri maupun massal sukses. |
+| **Total** | **Progres Keseluruhan Aplikasi** | **Selesai Penuh** | **100%** | **Seluruh 9 fase pengembangan dan integrasi selesai sepenuhnya.** |
 
 ---
 
-## 4. Fitur Antarmuka Pengguna & Sidebar Baru
-* **Rangkaian Pesan Baru**: Tombol untuk memulai percakapan baru secara bersih.
-* **Telusuri Rangkaian Pesan**: Kolom filter pencarian thread secara waktu nyata (*real-time search*).
-* **Terbaru & Persistensi**: Daftar riwayat percakapan yang disimpan di `localStorage` lokal klien dan dapat dibuka kembali kapan saja secara dinamis.
-* **Tampilkan Lebih Banyak**: Paginasi daftar thread di sidebar.
+## Rincian Panduan Praktik Terbaik per Fase
 
----
+### FASE 1: Persiapan Lingkungan & Inisialisasi (Progres: 100%)
+* **Pemisahan Aset Statis**: Memindahkan file UI (`index.html`, `script.js`, `style.css`) ke folder `/public` agar struktur backend dan frontend tidak tercampur.
+* **Isolasi Variabel Lingkungan**:
+  * Semua kredensial seperti `GEMINI_API_KEY`, `ASTRA_DB_APPLICATION_TOKEN`, dan `ASTRA_DB_API_ENDPOINT` disimpan dalam berkas `.env` di folder root proyek.
+  * Menyiapkan `.env.example` tanpa nilai asli untuk dipublikasikan ke Git.
+  * Memasukkan `.env` ke dalam berkas `.gitignore`.
 
-## 5. Sidebar CRUD, Kolaborasi, dan Drag-and-Drop (Fase 8)
-* **Sidebar Toggle**: Menambahkan tombol toggle berikon layout di sidebar kiri atas dan di chat header untuk memperluas (expand) atau menyusutkan (collapse) sidebar.
-* **Menu Opsi Rangkaian Pesan (⋮)**:
-  * **Edit Judul**: Mengubah judul thread secara langsung menggunakan input text inline.
-  * **Bagikan**: Menyandikan (encode) data percakapan menjadi string Base64 yang disisipkan ke dalam URL hash, menyalin link secara otomatis ke clipboard, dan memunculkan toast notifikasi. Saat link tersebut dibuka di browser lain, percakapan dibaca langsung dari hash URL tersebut secara dinamis.
-  * **Hapus**: Menghapus data thread tertentu dari LocalStorage.
-* **Drag-and-Drop Reordering**: Mendukung pengaturan urutan item daftar dengan cara menyeret dan menaruh (drag and drop) rangkaian pesan ke atas/bawah secara bebas, dan menyimpan urutan baru tersebut ke LocalStorage.
+### FASE 2: Implementasi Express Backend (Progres: 100%)
+* **Modularitas Routing**: Membangun server ExpressJS dasar pada berkas `index.js` dengan port default `3000`.
+* **Serving Aset**: Mengaktifkan middleware `app.use(express.static('public'))` untuk menyajikan frontend statis secara efisien.
+* **Security & Parsing**: Menerapkan middleware `cors()` untuk mengizinkan request lintas origin dan `express.json()` guna membaca request body.
 
+### FASE 3: Integrasi Astra DB via MCP Client (Progres: 100%)
+* **Standardisasi MCP**: Menghubungkan backend Express ke **MCP Server astra-db** menggunakan SDK resmi `@modelcontextprotocol/sdk` via transport `stdio`.
+* **Penyelamatan Error (Graceful Fallback)**: Jika koneksi ke MCP Server gagal, sistem tetap dapat berjalan dengan memanfaatkan basis pengetahuan bawaan Gemini tanpa menyebabkan crash (error 500).
+* **Context Ingestion**: Mengambil data potongan dokumen referensi **ISO 27001-2022 rm.pdf** dari Astra DB menggunakan parameter pencarian masukan terakhir pengguna (similarity vector), lalu menyuntikkannya ke `systemInstruction` Gemini API.
 
+### FASE 4: Refaktor Frontend Client-Side (Progres: 100%)
+* **State Management Multi-turn**: Mengelola riwayat percakapan dalam array objek `{ role: "user" | "model", text: "..." }` di sisi frontend untuk diteruskan ke backend.
+* **Indikator Proses (Loading State)**: Menyediakan tombol kirim berupa penanda proses loading ketika memanggil API untuk menghindari klik ganda.
+* **Penanganan Error Visual**: Menampilkan pesan error yang ramah di layar chat jika backend server tidak merespons atau mengembalikan error.
 
+### FASE 5: Verifikasi, Pengujian & Shipment (Progres: 100%)
+* **Kepatuhan Doktrin Karpathy**:
+  * *Think Before Coding*: Memvalidasi kelancaran interaksi antar komponen sebelum melakukan commit.
+  * *Surgical Changes*: Hanya menyentuh berkas yang ditugaskan tanpa merusak file sekitar.
+* **Circuit Breaker**: Jika server crash beruntun (lebih dari 3 kali) setelah perubahan kode, kembalikan worktree ke versi commit stabil terdekat secara instan.
+* **Shipment**: Menyiapkan file produksi dan memastikan API Key terisolasi penuh sebelum dideploy to server cloud.
+
+### FASE 6: Sinkronisasi & Update ke GitHub (Progres: 100%)
+* **Konfigurasi Kredensial Git**:
+  * Git Email: `donnyusmar@gmail.com`
+  * Git Username: `donnyusmar`
+  * Target Repositori GitHub: `https://github.com/donnyusmar/ISO27001-Chatbot.git`
+* **Alur Instruksi Fase 6**:
+  * Menyiapkan file `.gitignore` untuk menyaring berkas sensitif `.env` dan folder `node_modules/`.
+  * Inisialisasi git lokal (`git init`).
+  * Merekam konfigurasi user lokal sesuai kredensial pengguna.
+  * Menjalankan `git commit` perdana dan menyambungkan remote origin `https://github.com/donnyusmar/ISO27001-Chatbot.git`.
+  * Sukses melakukan `git push -u origin main`.
+
+### FASE 7: Implementasi Fitur Sidebar & UI Enhancements (Progres: 100%)
+* **UI Kiri (Sidebar Layout)**: Mengubah desain satu kolom menjadi dua kolom dengan sidebar modern selebar 280px.
+* **Pesan Baru (New Chat)**: Tombol pembersih context percakapan aktif untuk memulai dialog baru yang terisolasi.
+* **Filter Pencarian (Search Input)**: Fitur input pencarian di bagian atas sidebar untuk menyeleksi judul percakapan secara waktu nyata (*real-time filtering*).
+* **Persistensi Riwayat (LocalStorage)**: Menyimpan daftar judul thread dan array pesan lengkap di local storage peramban klien agar dapat dimuat kembali secara dinamis.
+
+### FASE 8: Sidebar CRUD, Kolaborasi, dan Drag-and-Drop (Progres: 100%)
+* **Sidebar Toggle (Expand/Collapse)**: Tombol toggle sidebar untuk menyembunyikan atau menampilkan sidebar demi fleksibilitas area chat.
+* **Menu Konteks Thread (Options)**:
+  * Tombol menu tiga titik vertikal di setiap baris percakapan pada daftar "Terbaru".
+  * Popup dropdown menu berisi: Edit Judul (inline editing), Hapus (hapus permanen dari LocalStorage), dan Bagikan (kolaborasi data/link percakapan).
+* **Reorder List (Drag-and-Drop)**: Implementasi drag-and-drop HTML5 API untuk mengurutkan daftar percakapan dan menyimpan index posisi baru di LocalStorage.
+
+### FASE 9: Fitur Maximize & Minimize Isi Chat (Individu & Global) (Progres: 100%)
+* **Toggle Lipat/Kembangkan Balon Chat**: Menambahkan tombol pemicu visual kecil di pojok kanan atas setiap pesan untuk melipat pesan panjang (meminimalkan tinggi balon pesan dengan gradien memudar) dan membukanya kembali.
+* **Pengendali Massal (Global Controller)**: Menyediakan tombol pengendali di header obrolan untuk melipat atau mengembangkan seluruh riwayat percakapan secara instan.

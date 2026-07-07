@@ -15,7 +15,8 @@
 | 6 | **Fase 6**: Sinkronisasi & Update ke GitHub | ✅ Selesai | 100% | Konfigurasi git lokal, setup remote, dan push ke GitHub repo sukses. |
 | 7 | **Fase 7**: Implementasi Fitur Sidebar & UI Enhancements | ✅ Selesai | 100% | Menambahkan fitur Pesan Baru, Telusuri Percakapan, dan Persistensi riwayat. |
 | 8 | **Fase 8**: Sidebar CRUD, Kolaborasi, dan Drag-and-Drop | ✅ Selesai | 100% | Tambahkan edit judul, hapus, bagikan link chat, toggle sidebar, dan reorder list. |
-| **Total** | **Progres Keseluruhan Aplikasi** | **Selesai Penuh** | **100%** | **Seluruh 8 fase pengembangan dan integrasi selesai sepenuhnya.** |
+| 9 | **Fase 9**: Fitur Maximize & Minimize Isi Chat (Individu & Global) | ✅ Selesai | 100% | Pembuatan toggle ciutkan/kembangkan balon obrolan secara mandiri maupun massal sukses. |
+| **Total** | **Progres Keseluruhan Aplikasi** | **Selesai Penuh** | **100%** | **Seluruh 9 fase pengembangan dan integrasi selesai sepenuhnya.** |
 
 ---
 
@@ -74,3 +75,7 @@
   * Tombol menu tiga titik vertikal di setiap baris percakapan pada daftar "Terbaru".
   * Popup dropdown menu berisi: Edit Judul (inline editing), Hapus (hapus permanen dari LocalStorage), dan Bagikan (kolaborasi data/link percakapan).
 * **Reorder List (Drag-and-Drop)**: Implementasi drag-and-drop HTML5 API untuk mengurutkan daftar percakapan dan menyimpan index posisi baru di LocalStorage.
+
+### FASE 9: Fitur Maximize & Minimize Isi Chat (Individu & Global) (Progres: 100%)
+* **Toggle Lipat/Kembangkan Balon Chat**: Menambahkan tombol pemicu visual kecil di pojok kanan atas setiap pesan untuk melipat pesan panjang (meminimalkan tinggi balon pesan dengan gradien memudar) dan membukanya kembali.
+* **Pengendali Massal (Global Controller)**: Menyediakan tombol pengendali di header obrolan untuk melipat atau mengembangkan seluruh riwayat percakapan secara instan.
