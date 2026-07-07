@@ -7,7 +7,6 @@ headers = []
 [build]
 publish = "C:\\Users\\Donnyusmar\\Downloads\\rain\\v7la-projects\\hactiv8\\IT-Pro\\starter\\public"
 publishOrigin = "config"
-commandOrigin = "ui"
 functions = "C:\\Users\\Donnyusmar\\Downloads\\rain\\v7la-projects\\hactiv8\\IT-Pro\\starter\\netlify\\functions"
 
 [build.environment]

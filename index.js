@@ -114,12 +114,16 @@ const mcpClient = new Client({
 
 let mcpConnected = false;
 async function connectMCP() {
+  if (process.env.NETLIFY) {
+    console.log("[INIT] Running on Netlify serverless. Skipping local MCP connection.");
+    return;
+  }
   try {
     await mcpClient.connect(transport);
     mcpConnected = true;
     console.log("Successfully connected to Astra DB MCP Server.");
   } catch (error) {
-    console.warn("WARN: Failed to connect to Astra DB MCP Server. Fallback active.");
+    console.warn("WARN: Failed to connect to Astra DB MCP Server. Fallback active:", error.message);
   }
 }
 connectMCP();
@@ -256,23 +260,15 @@ app.post('/api/admin/login', async (req, res) => {
 
   let storedPasswordHash = hashPassword(ADMIN_PASSWORD);
   try {
-    if (mcpConnected) {
-      const getRes = await mcpClient.callTool({
-        name: "FindRecord",
-        arguments: {
-          collectionName: "config",
-          filter: { id: "admin-auth" }
-        }
-      });
-      if (getRes && getRes.content && getRes.content.length > 0) {
-        const dbAuth = JSON.parse(getRes.content[0].text);
-        if (dbAuth && dbAuth.passwordHash) {
-          storedPasswordHash = dbAuth.passwordHash;
-        }
-      }
+    // Gunakan astraRequest langsung (tidak bergantung mcpConnected)
+    const result = await astraRequest('config', 'POST', {
+      findOne: { filter: { _id: "admin-auth" } }
+    });
+    if (result && result.data && result.data.document && result.data.document.passwordHash) {
+      storedPasswordHash = result.data.document.passwordHash;
     }
   } catch (err) {
-    console.warn("WARN: Failed to retrieve admin password from DB. Fallback active:", err.message);
+    console.log("[Login] Belum ada custom password di database (menggunakan default password).");
   }
 
   if (hashPassword(password) === storedPasswordHash) {
@@ -288,23 +284,14 @@ app.post('/api/admin/change-password', authenticateAdmin, async (req, res) => {
 
   let storedPasswordHash = hashPassword(ADMIN_PASSWORD);
   try {
-    if (mcpConnected) {
-      const getRes = await mcpClient.callTool({
-        name: "FindRecord",
-        arguments: {
-          collectionName: "config",
-          filter: { id: "admin-auth" }
-        }
-      });
-      if (getRes && getRes.content && getRes.content.length > 0) {
-        const dbAuth = JSON.parse(getRes.content[0].text);
-        if (dbAuth && dbAuth.passwordHash) {
-          storedPasswordHash = dbAuth.passwordHash;
-        }
-      }
+    const result = await astraRequest('config', 'POST', {
+      findOne: { filter: { _id: "admin-auth" } }
+    });
+    if (result && result.data && result.data.document && result.data.document.passwordHash) {
+      storedPasswordHash = result.data.document.passwordHash;
     }
   } catch (err) {
-    console.warn("WARN: Failed to fetch admin password from DB for change password:", err.message);
+    // Abaikan jika belum ada custom password
   }
 
   if (hashPassword(oldPassword) !== storedPasswordHash) {
@@ -314,33 +301,25 @@ app.post('/api/admin/change-password', authenticateAdmin, async (req, res) => {
   const newHash = hashPassword(newPassword);
 
   try {
-    if (mcpConnected) {
-      // Hapus data lama terlebih dahulu untuk menghindari bentrok primary key Astra DB
-      try {
-        await mcpClient.callTool({
-          name: "DeleteRecord",
-          arguments: {
-            collectionName: "config",
-            filter: { id: "admin-auth" }
-          }
-        });
-      } catch (delErr) {
-        // Abaikan jika tidak ditemukan
-      }
-
-      // Simpan password baru
-      await mcpClient.callTool({
-        name: "CreateRecord",
-        arguments: {
-          collectionName: "config",
-          record: {
-            id: "admin-auth",
-            passwordHash: newHash,
-            updatedAt: new Date().toISOString()
-          }
-        }
+    // Hapus data lama terlebih dahulu untuk menghindari bentrok primary key Astra DB
+    try {
+      await astraRequest('config', 'POST', {
+        deleteOne: { filter: { _id: "admin-auth" } }
       });
+    } catch (delErr) {
+      // Abaikan jika tidak ditemukan
     }
+
+    // Simpan password baru
+    await astraRequest('config', 'POST', {
+      insertOne: {
+        document: {
+          _id: "admin-auth",
+          passwordHash: newHash,
+          updatedAt: new Date().toISOString()
+        }
+      }
+    });
 
     // Perbarui variabel di memori env
     process.env.ADMIN_PASSWORD = newPassword;
