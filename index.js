@@ -5,12 +5,8 @@ import { GoogleGenAI } from '@google/genai';
 import { Client } from '@modelcontextprotocol/sdk/client/index.js';
 import { StdioClientTransport } from '@modelcontextprotocol/sdk/client/stdio.js';
 import multer from 'multer';
-import { createRequire } from 'module';
+import * as pdfParseModule from 'pdf-parse';
 import crypto from 'crypto';
-
-const require = createRequire(process.cwd() + '/index.js');
-const pdfParseModule = require('pdf-parse');
-const pdfParse = typeof pdfParseModule === 'function' ? pdfParseModule : (pdfParseModule.default || pdfParseModule);
 
 function hashPassword(password) {
   return crypto.createHash('sha256').update(password).digest('hex');
@@ -25,17 +21,17 @@ async function parsePdfText(buffer) {
       return result.text || result;
     }
     // Dukungan untuk pdf-parse versi lama (Function-based, e.g., v1.x)
-    if (typeof pdfParse === 'function') {
-      const data = await pdfParse(buffer);
+    const classicParser = pdfParseModule.default || pdfParseModule;
+    if (typeof classicParser === 'function') {
+      const data = await classicParser(buffer);
       return data.text;
     }
-    if (pdfParse && typeof pdfParse.default === 'function') {
-      const data = await pdfParse.default(buffer);
+    // Fallback default jika diimpor secara dinamis sebagai default
+    if (typeof pdfParseModule === 'function') {
+      const data = await pdfParseModule(buffer);
       return data.text;
     }
-    // Fallback default
-    const data = await pdfParse(buffer);
-    return data.text;
+    throw new Error("Library pdf-parse tidak mengekspor fungsi parser yang valid.");
   } catch (err) {
     throw new Error("Gagal mengurai dokumen PDF: " + err.message);
   }
