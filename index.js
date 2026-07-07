@@ -8,7 +8,7 @@ import multer from 'multer';
 import { createRequire } from 'module';
 import crypto from 'crypto';
 
-const require = createRequire(import.meta.url);
+const require = createRequire(process.cwd() + '/index.js');
 const pdfParseModule = require('pdf-parse');
 const pdfParse = typeof pdfParseModule === 'function' ? pdfParseModule : (pdfParseModule.default || pdfParseModule);
 
