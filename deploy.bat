@@ -25,7 +25,7 @@ echo  MELAKUKAN DEPLOY DIREK KE NETLIFY
 echo ==============================================
 echo [+] Menjalankan Netlify Production Deploy...
 :: Menjalankan deployment menggunakan Netlify CLI dengan Site ID yang sesuai
-npx netlify deploy --prod --site=1b63904c-c953-4fb8-b36f-e00a4b832a1c
+npx netlify deploy --prod --site=7bd45849-edec-4c22-abb3-48d3c857f133
 
 echo.
 echo ==============================================
